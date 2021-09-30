@@ -58,6 +58,7 @@ var gameCatalogue = [
 var schema = buildSchema(`
   type Query {
     games: [Game]
+    getGame(id: Int!): Game
   },
   type EsrbRating{
       id: Int
@@ -117,6 +118,15 @@ var schema = buildSchema(`
 // The root provides a resolver function for each API endpoint
 var root = {
     games: () => gameCatalogue,
+    getGame: ({id}) => {
+        let targetGame = gameCatalogue.filter(item => item.id === id)
+        if (targetGame){
+            return targetGame[0]
+        }
+        else{
+            throw new Error("The ID does not exist")
+        }
+    },
     setGame: ({input}) => {
         gameCatalogue.push({id:input.id, title:input.title,publisher:input.publisher,
                             developer:input.developer, releaseDate: input.releaseDate,
@@ -124,8 +134,9 @@ var root = {
         return input
     },
     deleteGame: ({id})=> {
-        const ok = Boolean(gameCatalogue[id])
-        let delc = gameCatalogue[id]
+        let targetGame = gameCatalogue.filter(item => item.id === id)
+        const ok = Boolean(targetGame)
+        let delc = targetGame[0]
         gameCatalogue = gameCatalogue.filter(item => item.id !== id)
         console.log(JSON.stringify(delc))
         return {ok}
