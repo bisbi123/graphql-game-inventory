@@ -67,7 +67,8 @@ var schema = buildSchema(`
   type Platform {
       id: Int
       name: String
-  }
+  },
+
   type Game {
     id: Int
     title: String
@@ -76,14 +77,68 @@ var schema = buildSchema(`
     releaseDate: String
     platforms: [Platform]
     esrbRating: EsrbRating
+  },
+  
+  input EsrbRatingInput{
+    id: Int
+    code: String
+    name: String
+  },
+  input PlatformInput {
+    id: Int
+    name: String
+  },
+  
+  input GameInput{
+    id: Int
+    title: String
+    publisher: String
+    developer: String
+    releaseDate: String
+    platforms: [PlatformInput]
+    esrbRating: EsrbRatingInput
+  },
+  
 
-}
+  type DeleteResponse {
+    ok: Boolean!
+  },
+
+  type Mutation {
+    setGame(input: GameInput): Game
+    deleteGame(id: Int!): DeleteResponse
+    editGame(id: Int!, title:String!): Game
+  }
+
+
  
 `);
 
 // The root provides a resolver function for each API endpoint
 var root = {
-    games: () => gameCatalogue
+    games: () => gameCatalogue,
+    setGame: ({input}) => {
+        gameCatalogue.push({id:input.id, title:input.title,publisher:input.publisher,
+                            developer:input.developer, releaseDate: input.releaseDate,
+                            platforms:input.platforms, esrbRating:input.esrbRating})
+        return input
+    },
+    deleteGame: ({id})=> {
+        const ok = Boolean(gameCatalogue[id])
+        let delc = gameCatalogue[id]
+        gameCatalogue = gameCatalogue.filter(item => item.id !== id)
+        console.log(JSON.stringify(delc))
+        return {ok}
+    },
+    editGame: ({id,...title}) => {
+        if (!gameCatalogue[id]){
+            throw new Error("Game does not exist")
+        }
+        gameCatalogue[id] = {
+            ...gameCatalogue[id], ...title
+        }
+        return gameCatalogue[id]
+    }
 };
 
 var app = express();
