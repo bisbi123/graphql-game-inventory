@@ -142,13 +142,15 @@ var root = {
         return {ok}
     },
     editGame: ({id,...title}) => {
-        if (!gameCatalogue[id]){
+        let targetGame = gameCatalogue.filter(item => item.id === id)
+        if (!targetGame){
             throw new Error("Game does not exist")
         }
-        gameCatalogue[id] = {
-            ...gameCatalogue[id], ...title
+        let indexOfTarget = gameCatalogue.indexOf(targetGame[0])
+        gameCatalogue[indexOfTarget] = {
+            ...gameCatalogue[indexOfTarget], ...title
         }
-        return gameCatalogue[id]
+        return gameCatalogue[indexOfTarget]
     }
 };
 
